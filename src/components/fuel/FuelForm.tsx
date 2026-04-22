@@ -8,13 +8,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+export type DateMode = "single" | "month";
 
 interface Props {
   value: FuelReceipt;
   onChange: (next: FuelReceipt) => void;
+  dateMode: DateMode;
+  onDateModeChange: (m: DateMode) => void;
+  monthValue: string; // "January"
+  yearValue: string;
+  receiptCount: number;
+  onMonthChange: (v: string) => void;
+  onYearChange: (v: string) => void;
+  onReceiptCountChange: (n: number) => void;
 }
 
-export function FuelForm({ value, onChange }: Props) {
+export function FuelForm({
+  value, onChange,
+  dateMode, onDateModeChange,
+  monthValue, yearValue, receiptCount,
+  onMonthChange, onYearChange, onReceiptCountChange,
+}: Props) {
   const set = <K extends keyof FuelReceipt>(k: K, v: FuelReceipt[K]) =>
     onChange({ ...value, [k]: v });
 
@@ -51,13 +72,6 @@ export function FuelForm({ value, onChange }: Props) {
       <Field label="Receipt No">
         <Input value={value.receiptNo} onChange={(e) => set("receiptNo", e.target.value)} />
       </Field>
-      <Field label="Date & Time">
-        <Input
-          type="datetime-local"
-          value={value.dateTime}
-          onChange={(e) => set("dateTime", e.target.value)}
-        />
-      </Field>
       <Field label="Product">
         <Select value={value.product} onValueChange={(v) => set("product", v as "Petrol" | "Diesel")}>
           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -67,6 +81,51 @@ export function FuelForm({ value, onChange }: Props) {
           </SelectContent>
         </Select>
       </Field>
+
+      {/* Date mode tabs */}
+      <Field label="Date Mode" className="sm:col-span-2">
+        <Tabs value={dateMode} onValueChange={(v) => onDateModeChange(v as DateMode)}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="single">Single Date & Time</TabsTrigger>
+            <TabsTrigger value="month">Month (batch)</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </Field>
+
+      {dateMode === "single" ? (
+        <Field label="Date & Time" className="sm:col-span-2">
+          <Input
+            type="datetime-local"
+            value={value.dateTime}
+            onChange={(e) => set("dateTime", e.target.value)}
+          />
+        </Field>
+      ) : (
+        <>
+          <Field label="Month">
+            <Select value={monthValue} onValueChange={onMonthChange}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Year">
+            <Input value={yearValue} onChange={(e) => onYearChange(e.target.value)} />
+          </Field>
+          <Field label="Number of Receipts" className="sm:col-span-2">
+            <Input
+              type="number"
+              min={1}
+              max={6}
+              value={receiptCount}
+              onChange={(e) => onReceiptCountChange(Math.max(1, Math.min(6, +e.target.value || 1)))}
+            />
+            <p className="text-xs text-muted-foreground">Spaced randomly 5–7 days apart, time 8:30 AM – 6:30 PM.</p>
+          </Field>
+        </>
+      )}
+
       <Field label="Payment Mode">
         <Select value={value.paymentMode} onValueChange={(v) => set("paymentMode", v as FuelReceipt["paymentMode"]) }>
           <SelectTrigger><SelectValue /></SelectTrigger>

@@ -1,6 +1,8 @@
 import { DriverSalary } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +24,15 @@ interface Props {
 export function DriverForm({ value, onChange }: Props) {
   const set = <K extends keyof DriverSalary>(k: K, v: DriverSalary[K]) =>
     onChange({ ...value, [k]: v });
+
+  const handleSignatureUpload = (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      onChange({ ...value, signatureDataUrl: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -50,6 +61,30 @@ export function DriverForm({ value, onChange }: Props) {
       </Field>
       <Field label="Amount Paid (₹)" className="sm:col-span-2">
         <Input type="number" value={value.amount} onChange={(e) => set("amount", +e.target.value)} />
+      </Field>
+
+      <Field label="Signature (overlays revenue stamp)" className="sm:col-span-2">
+        <div className="flex items-center gap-3">
+          <Input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(e) => handleSignatureUpload(e.target.files?.[0] ?? null)}
+          />
+          {value.signatureDataUrl && (
+            <>
+              <img src={value.signatureDataUrl} alt="signature" className="h-10 w-auto rounded border" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onChange({ ...value, signatureDataUrl: undefined })}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">PNG with transparent background works best.</p>
       </Field>
     </div>
   );
