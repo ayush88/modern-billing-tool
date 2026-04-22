@@ -42,7 +42,7 @@ export const DriverPreview = forwardRef<HTMLDivElement, { data: DriverSalary }>(
         className="mx-auto w-full max-w-[640px] bg-white p-10 text-black font-sans"
         style={{ fontSize: "14px", aspectRatio: "1/1.414" }}
       >
-        <div className="border-2 border-black p-6">
+        <div className="border-2 border-black p-6 pl-[18px] pt-[18px] pr-[18px] pb-[18px]">
           {/* Section 1 */}
           <div className="text-center text-lg font-bold underline">Driver Salary Receipt</div>
           <div className="mt-6 space-y-2">
