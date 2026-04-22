@@ -39,8 +39,8 @@ export const DriverPreview = forwardRef<HTMLDivElement, { data: DriverSalary }>(
     return (
       <div
         ref={ref}
-        className="mx-auto w-full max-w-[640px] bg-white p-10 text-black"
-        style={{ fontFamily: "'Times New Roman', serif", fontSize: "14px", aspectRatio: "1/1.414" }}
+        className="mx-auto w-full max-w-[640px] bg-white p-10 text-black font-sans"
+        style={{ fontSize: "14px", aspectRatio: "1/1.414" }}
       >
         <div className="border-2 border-black p-6">
           {/* Section 1 */}
