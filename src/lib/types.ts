@@ -24,4 +24,5 @@ export interface DriverSalary {
   salaryYear: string; // "2026"
   paymentDate: string; // ISO date yyyy-mm-dd
   amount: number;
+  signatureDataUrl?: string; // base64 PNG of uploaded signature
 }

@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { DriverSalary } from "@/lib/types";
+import revenueStamp from "@/assets/revenue-stamp.webp";
 
 function fmtDate(iso: string) {
   if (!iso) return "";
@@ -9,7 +10,6 @@ function fmtDate(iso: string) {
 
 function inWords(n: number): string {
   if (!n || isNaN(n)) return "";
-  // simple INR words (sufficient for typical salaries)
   const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
   const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
   const num = (x: number): string => {
@@ -75,8 +75,21 @@ export const DriverPreview = forwardRef<HTMLDivElement, { data: DriverSalary }>(
             month of <b>{monthYear}</b>.
           </p>
           <div className="mt-10 flex items-end justify-between">
-            <div className="flex h-24 w-32 items-center justify-center border border-dashed border-black text-xs text-gray-500">
-              Revenue Stamp
+            <div className="relative h-28 w-24">
+              <img
+                src={revenueStamp}
+                alt="Revenue Stamp"
+                crossOrigin="anonymous"
+                className="absolute inset-0 h-full w-full object-contain"
+              />
+              {data.signatureDataUrl && (
+                <img
+                  src={data.signatureDataUrl}
+                  alt="Signature"
+                  className="absolute inset-0 h-full w-full object-contain mix-blend-multiply"
+                  style={{ transform: "rotate(-6deg) scale(1.15)" }}
+                />
+              )}
             </div>
             <div className="text-right font-bold">Driver Name: {data.driverName}</div>
           </div>

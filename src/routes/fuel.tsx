@@ -4,7 +4,7 @@ import { Download } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FuelForm } from "@/components/fuel/FuelForm";
+import { FuelForm, type DateMode } from "@/components/fuel/FuelForm";
 import { FuelPreview } from "@/components/fuel/FuelPreview";
 import { FuelReceipt } from "@/lib/types";
 import { exportElementToPdf } from "@/lib/pdf";
@@ -19,6 +19,11 @@ export const Route = createFileRoute("/fuel")({
   component: FuelPage,
 });
 
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
 function nowLocal() {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -27,6 +32,30 @@ function nowLocal() {
 
 function randReceipt() {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function toLocalInput(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Generate N evenly-ish spaced datetimes within a month, 5–7 days apart,
+// time between 8:30 and 18:30.
+function generateMonthDates(monthIdx: number, year: number, count: number): string[] {
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+  const out: string[] = [];
+  let day = 1 + Math.floor(Math.random() * 5); // start day 1–5
+  for (let i = 0; i < count; i++) {
+    if (day > daysInMonth) day = daysInMonth;
+    const minutesSinceStart = Math.floor(Math.random() * (10 * 60 + 1)); // 0..600
+    const totalMin = 8 * 60 + 30 + minutesSinceStart;
+    const hh = Math.floor(totalMin / 60);
+    const mm = totalMin % 60;
+    out.push(toLocalInput(new Date(year, monthIdx, day, hh, mm)));
+    const gap = 5 + Math.floor(Math.random() * 3); // 5,6,7
+    day += gap;
+  }
+  return out;
 }
 
 function FuelPage() {
@@ -39,23 +68,54 @@ function FuelPage() {
     receiptNo: randReceipt(),
     product: "Petrol",
     rate: 96.72,
-    volume: 10.34,
-    total: 1000,
+    volume: +(5000 / 96.72).toFixed(2),
+    total: 5000,
     dateTime: nowLocal(),
-    paymentMode: "Online",
+    paymentMode: "Card",
     vehicleType: "",
     vehicleNo: "",
     customerName: "",
   }));
 
+  const now = new Date();
+  const [dateMode, setDateMode] = useState<DateMode>("single");
+  const [monthValue, setMonthValue] = useState(MONTHS[now.getMonth()]);
+  const [yearValue, setYearValue] = useState(String(now.getFullYear()));
+  const [receiptCount, setReceiptCount] = useState(3);
+
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
-    if (!previewRef.current) return;
-    await exportElementToPdf(previewRef.current, {
-      filename: `Fuel_Receipt_${data.receiptNo}.pdf`,
-      format: "thermal",
-    });
+    if (dateMode === "single") {
+      if (!previewRef.current) return;
+      await exportElementToPdf(previewRef.current, {
+        filename: `Fuel_Receipt_${data.receiptNo}.pdf`,
+        format: "thermal",
+      });
+      return;
+    }
+
+    // Batch month mode — render each receipt in turn
+    const monthIdx = MONTHS.indexOf(monthValue);
+    const year = parseInt(yearValue, 10) || now.getFullYear();
+    const dates = generateMonthDates(monthIdx, year, receiptCount);
+
+    const original = data;
+    for (let i = 0; i < dates.length; i++) {
+      const newData = {
+        ...original,
+        dateTime: dates[i],
+        receiptNo: randReceipt(),
+      };
+      setData(newData);
+      // wait for render
+      await new Promise((r) => setTimeout(r, 120));
+      if (!previewRef.current) continue;
+      await exportElementToPdf(previewRef.current, {
+        filename: `Fuel_Receipt_${monthValue}_${year}_${i + 1}.pdf`,
+        format: "thermal",
+      });
+    }
   };
 
   return (
@@ -67,7 +127,18 @@ function FuelPage() {
             <CardTitle className="text-base">Receipt details</CardTitle>
           </CardHeader>
           <CardContent>
-            <FuelForm value={data} onChange={setData} />
+            <FuelForm
+              value={data}
+              onChange={setData}
+              dateMode={dateMode}
+              onDateModeChange={setDateMode}
+              monthValue={monthValue}
+              yearValue={yearValue}
+              receiptCount={receiptCount}
+              onMonthChange={setMonthValue}
+              onYearChange={setYearValue}
+              onReceiptCountChange={setReceiptCount}
+            />
           </CardContent>
         </Card>
 
@@ -76,10 +147,11 @@ function FuelPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Live preview</CardTitle>
               <Button onClick={handleDownload} size="sm" className="rounded-xl">
-                <Download className="mr-2 h-4 w-4" /> Download PDF
+                <Download className="mr-2 h-4 w-4" />
+                {dateMode === "month" ? `Download ${receiptCount} PDFs` : "Download PDF"}
               </Button>
             </CardHeader>
-            <CardContent className="flex justify-center bg-[oklch(0.97_0.005_247)] py-8 rounded-b-2xl">
+            <CardContent className="flex justify-center bg-muted py-8 rounded-b-2xl">
               <FuelPreview ref={previewRef} data={data} />
             </CardContent>
           </Card>

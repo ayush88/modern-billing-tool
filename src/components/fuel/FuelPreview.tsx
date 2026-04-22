@@ -1,12 +1,13 @@
 import { forwardRef } from "react";
 import { FuelReceipt } from "@/lib/types";
+import hdfcStrip from "@/assets/hdfc-side.webp";
 
-function fmtDateTime(iso: string) {
+function fmtDate(iso: string) {
   if (!iso) return "";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
@@ -14,53 +15,125 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
     return (
       <div
         ref={ref}
-        className="relative mx-auto w-[320px] bg-white p-4 text-black"
-        style={{ fontFamily: "'VT323', 'Share Tech Mono', monospace", fontSize: "16px", lineHeight: 1.25 }}
+        className="relative mx-auto bg-white text-black"
+        style={{
+          width: "360px",
+          padding: "20px 28px 24px 20px",
+          fontFamily: "'VT323', monospace",
+          fontSize: "20px",
+          lineHeight: 1.15,
+          letterSpacing: "0.5px",
+        }}
       >
-        {/* HDFC vertical watermarks */}
-        <div className="pointer-events-none absolute right-1 top-4 flex flex-col gap-10 text-[10px] tracking-widest opacity-30" style={{ writingMode: "vertical-rl" }}>
-          <span>HDFC BANK</span>
-          <span>HDFC BANK</span>
-          <span>HDFC BANK</span>
+        {/* HDFC vertical strips on the right edge — rotated logo image */}
+        <div
+          className="pointer-events-none absolute"
+          style={{ right: "2px", top: "20px", width: "22px", height: "260px" }}
+        >
+          <img
+            src={hdfcStrip}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              height: "22px",
+              width: "260px",
+              transform: "translate(-50%, -50%) rotate(90deg)",
+              transformOrigin: "center",
+              objectFit: "contain",
+            }}
+          />
         </div>
-        <div className="absolute right-1 bottom-2 text-[9px] opacity-40">A127016</div>
+        <div
+          className="pointer-events-none absolute"
+          style={{ right: "2px", top: "560px", width: "22px", height: "260px" }}
+        >
+          <img
+            src={hdfcStrip}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              height: "22px",
+              width: "260px",
+              transform: "translate(-50%, -50%) rotate(90deg)",
+              transformOrigin: "center",
+              objectFit: "contain",
+            }}
+          />
+        </div>
 
-        <div className="text-center">
-          <div className="text-[18px] font-bold">WELCOME!!!</div>
-          <div className="font-bold">{data.stationName}</div>
+        {/* Header */}
+        <div className="text-center" style={{ fontWeight: 700 }}>
+          <div>WELCOME!!!</div>
+          <div>{data.stationName}</div>
           <div>{data.addressLine1}</div>
           <div>{data.addressLine2}</div>
-          <div>Tel: {data.telNo}</div>
-          <div>GST: {data.gstNo}</div>
         </div>
-        <div className="my-2 border-t border-dashed border-black" />
-        <Row k="Receipt" v={data.receiptNo} />
-        <Row k="Date" v={fmtDateTime(data.dateTime)} />
-        <Row k="Pump No" v="03" />
-        <Row k="Nozzle" v="02" />
-        <Row k="Product" v={data.product} />
-        <Row k="Rate" v={`${data.rate.toFixed(2)} /L`} />
-        <Row k="Volume" v={`${data.volume.toFixed(2)} L`} />
-        <div className="my-2 border-t border-dashed border-black" />
-        <Row k="AMOUNT" v={`Rs. ${data.total.toFixed(2)}`} bold />
-        <Row k="Mode" v={data.paymentMode} />
-        {data.vehicleNo && <Row k="Vehicle" v={data.vehicleNo} />}
-        {data.vehicleType && <Row k="Veh.Type" v={data.vehicleType} />}
-        {data.customerName && <Row k="Customer" v={data.customerName} />}
-        <div className="my-2 text-center">*****************</div>
-        <div className="text-center">Thank You! Visit Again</div>
-        <div className="text-center">Save Fuel, Save Money.</div>
+
+        <div style={{ height: "16px" }} />
+
+        {/* Block 1 */}
+        <div style={{ fontWeight: 700 }}>
+          <Line k="GST NO" v={data.gstNo} />
+          <Line k="TEL NO" v={data.telNo} />
+          <Line k="RECEIPT NO" v={data.receiptNo} />
+          <Line k="FCC ID" v="" />
+          <Line k="FIP NO" v="" />
+          <Line k="NOZZLE NO" v="" />
+        </div>
+
+        <div style={{ height: "20px" }} />
+
+        {/* Block 2 — product/amount */}
+        <div style={{ fontWeight: 700 }}>
+          <Line k="PRODUCT" v="" />
+          <Line k="RATE/LTR" v={`₹ ${data.rate.toFixed(2)}`} />
+          <Line k="AMOUNT" v={`₹ ${data.total.toFixed(2)}`} />
+          <Line k="VOLUME(LTR)" v={`${data.volume.toFixed(2)} lt`} />
+        </div>
+
+        <div style={{ height: "20px" }} />
+
+        {/* Block 3 — vehicle */}
+        <div style={{ fontWeight: 700 }}>
+          <Line k="VEH TYPE" v={data.vehicleType || data.product} />
+          <Line k="VEH NO" v={data.vehicleNo} />
+          <Line k="CUSTOMER NAME" v={data.customerName} />
+        </div>
+
+        <div style={{ height: "20px" }} />
+
+        {/* Block 4 — meta */}
+        <div style={{ fontWeight: 700 }}>
+          <Line k="DATE" v={fmtDate(data.dateTime)} />
+          <Line k="MODE" v={data.paymentMode} />
+          <Line k="LST NO" v="" />
+          <Line k="VAT NO" v="" />
+          <Line k="ATTENDENT ID" v="not available" />
+        </div>
+
+        <div style={{ height: "32px" }} />
+
+        <div className="text-center" style={{ fontWeight: 700 }}>
+          <div>*****************</div>
+          <div>Thank You! Visit Again</div>
+          <div>Save Fuel, Save Money.</div>
+        </div>
       </div>
     );
   },
 );
 FuelPreview.displayName = "FuelPreview";
 
-function Row({ k, v, bold }: { k: string; v: string; bold?: boolean }) {
+function Line({ k, v }: { k: string; v: string }) {
   return (
-    <div className={`flex justify-between ${bold ? "font-bold" : ""}`}>
-      <span>{k}</span>
-      <span>{v}</span>
+    <div>
+      {k}:{v ? ` ${v}` : ""}
     </div>
   );
 }
