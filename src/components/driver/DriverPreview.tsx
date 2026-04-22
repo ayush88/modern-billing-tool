@@ -86,7 +86,7 @@ export const DriverPreview = forwardRef<HTMLDivElement, { data: DriverSalary }>(
                 <img
                   src={data.signatureDataUrl}
                   alt="Signature"
-                  className="absolute inset-0 h-full w-full object-contain mix-blend-multiply"
+                  className="absolute inset-0 h-full w-full mix-blend-multiply object-contain mx-[37px]"
                   style={{ transform: "rotate(-6deg) scale(1.15)" }}
                 />
               )}
