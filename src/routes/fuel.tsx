@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FuelForm, type DateMode } from "@/components/fuel/FuelForm";
 import { FuelPreview } from "@/components/fuel/FuelPreview";
 import { FuelReceipt } from "@/lib/types";
-import { saveFuelBill, downloadFuelPdf } from "@/lib/api";
+import { exportElementToA4Pdf } from "@/lib/pdf";
 
 export const Route = createFileRoute("/fuel")({
   head: () => ({
@@ -85,15 +85,26 @@ function FuelPage() {
 
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Fuel slip placement on A4: 7.1cm from left, 0.8cm from top, 6.81cm × 13.35cm
+  const FUEL_PLACEMENT = { xCm: 7.1, yCm: 0.8, widthCm: 6.81, heightCm: 13.35 };
+
+  const exportCurrent = async (receiptNo: string) => {
+    const node = previewRef.current;
+    if (!node) throw new Error("Preview not ready");
+    await exportElementToA4Pdf(node, {
+      filename: `Fuel_Receipt_${receiptNo}.pdf`,
+      ...FUEL_PLACEMENT,
+    });
+  };
+
   const handleDownload = async () => {
     try {
       if (dateMode === "single") {
-        const saved = await saveFuelBill(data);
-        downloadFuelPdf(saved.id, data.receiptNo);
+        await exportCurrent(data.receiptNo);
         return;
       }
 
-      // Batch month mode — save each receipt in turn
+      // Batch month mode — render each in turn, capture, download
       const monthIdx = MONTHS.indexOf(monthValue);
       const year = parseInt(yearValue, 10) || now.getFullYear();
       const dates = generateMonthDates(monthIdx, year, receiptCount);
@@ -106,11 +117,9 @@ function FuelPage() {
           receiptNo: randReceipt(),
         };
         setData(newData);
-        // wait for render to update preview visually
-        await new Promise((r) => setTimeout(r, 120));
-
-        const saved = await saveFuelBill(newData);
-        downloadFuelPdf(saved.id, newData.receiptNo);
+        // wait two animation frames for React + layout to commit
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
+        await exportCurrent(newData.receiptNo);
       }
     } catch (error) {
       console.error(error);

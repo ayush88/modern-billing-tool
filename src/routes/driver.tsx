@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DriverForm } from "@/components/driver/DriverForm";
 import { DriverPreview } from "@/components/driver/DriverPreview";
 import { DriverSalary } from "@/lib/types";
-import { saveDriverBill, downloadDriverPdf } from "@/lib/api";
+import { exportElementToA4Pdf } from "@/lib/pdf";
 
 export const Route = createFileRoute("/driver")({
   head: () => ({
@@ -43,8 +43,16 @@ function DriverPage() {
 
   const handleDownload = async () => {
     try {
-      const saved = await saveDriverBill(data);
-      downloadDriverPdf(saved.id, data.salaryMonth, data.salaryYear);
+      const node = previewRef.current;
+      if (!node) throw new Error("Preview not ready");
+      // Driver slip uses the full A4 with 1cm margins on all sides (A4 = 21 × 29.7cm)
+      await exportElementToA4Pdf(node, {
+        filename: `Driver_Salary_${data.salaryMonth}_${data.salaryYear}.pdf`,
+        xCm: 1,
+        yCm: 1,
+        widthCm: 19,
+        heightCm: 27.7,
+      });
     } catch (error) {
       console.error(error);
       alert("Failed to save or download driver bill.");
