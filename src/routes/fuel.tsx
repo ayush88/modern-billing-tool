@@ -85,8 +85,8 @@ function FuelPage() {
 
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Fuel slip placement on A4: 7.1cm from left, 0.8cm from top, 6.81cm × 13.35cm
-  const FUEL_PLACEMENT = { xCm: 7.1, yCm: 0.8, widthCm: 6.81, heightCm: 13.35 };
+  // Fuel slip placement on A4 — measured from reference 1.pdf
+  const FUEL_PLACEMENT = { xCm: 7.11, yCm: 0.79, widthCm: 6.91, heightCm: 13.41 };
 
   const exportCurrent = async (receiptNo: string) => {
     const node = previewRef.current;

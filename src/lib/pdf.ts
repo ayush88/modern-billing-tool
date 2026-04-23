@@ -43,11 +43,24 @@ export async function exportElementToA4Pdf(
     }),
   );
 
+  // Capture exactly the node's own box (offsetWidth/offsetHeight) so any
+  // absolutely-positioned children that overflow do not inflate the image.
+  const w = node.offsetWidth;
+  const h = node.offsetHeight;
+
   const dataUrl = await toJpeg(node, {
     pixelRatio,
     quality,
+    width: w,
+    height: h,
+    canvasWidth: w,
+    canvasHeight: h,
     backgroundColor: "#ffffff",
     cacheBust: true,
+    style: {
+      margin: "0",
+      transform: "none",
+    },
   });
 
   const pdf = new jsPDF({ unit: "cm", format: "a4", orientation: "portrait" });
