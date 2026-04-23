@@ -1,45 +1,65 @@
-import { toPng } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import jsPDF from "jspdf";
 
-export interface PdfOptions {
+export interface A4PlacementOptions {
   filename: string;
-  format: "a4" | "thermal";
+  /** placement on the A4 page, in cm */
+  xCm: number;
+  yCm: number;
+  widthCm: number;
+  heightCm: number;
+  /** rasterization scale — higher = sharper but larger file. 2 is a good balance. */
+  pixelRatio?: number;
+  /** JPEG quality 0..1 — 0.85 keeps it crisp while staying small */
+  quality?: number;
 }
 
-export async function exportElementToPdf(node: HTMLElement, opts: PdfOptions) {
-  // html-to-image handles modern CSS (oklch, etc.) by rasterizing via SVG <foreignObject>
-  const dataUrl = await toPng(node, {
-    pixelRatio: 3,
+/**
+ * Capture a DOM node and place it on an A4 PDF at exact cm coordinates.
+ * Uses JPEG to keep file sizes small (PNG of the same content can be 10–20×).
+ */
+export async function exportElementToA4Pdf(
+  node: HTMLElement,
+  opts: A4PlacementOptions,
+) {
+  const pixelRatio = opts.pixelRatio ?? 2;
+  const quality = opts.quality ?? 0.85;
+
+  // Wait for fonts and any pending images so the capture matches the live preview.
+  if (document.fonts && (document.fonts as any).ready) {
+    try {
+      await (document.fonts as any).ready;
+    } catch {
+      /* noop */
+    }
+  }
+  await Promise.all(
+    Array.from(node.querySelectorAll("img")).map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        img.addEventListener("load", () => resolve(), { once: true });
+        img.addEventListener("error", () => resolve(), { once: true });
+      });
+    }),
+  );
+
+  const dataUrl = await toJpeg(node, {
+    pixelRatio,
+    quality,
     backgroundColor: "#ffffff",
     cacheBust: true,
   });
 
-  // Get pixel dimensions of the captured image
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const i = new Image();
-    i.onload = () => resolve(i);
-    i.onerror = reject;
-    i.src = dataUrl;
-  });
-
-  let pdf: jsPDF;
-  let pageW: number;
-  let pageH: number;
-
-  if (opts.format === "thermal") {
-    pageW = 80;
-    pageH = (img.height * pageW) / img.width;
-    pdf = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" });
-    pdf.addImage(dataUrl, "PNG", 0, 0, pageW, pageH);
-  } else {
-    pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-    pageW = 210;
-    pageH = 297;
-    const margin = 10;
-    const w = pageW - margin * 2;
-    const h = (img.height * w) / img.width;
-    pdf.addImage(dataUrl, "PNG", margin, margin, w, Math.min(h, pageH - margin * 2));
-  }
-
+  const pdf = new jsPDF({ unit: "cm", format: "a4", orientation: "portrait" });
+  pdf.addImage(
+    dataUrl,
+    "JPEG",
+    opts.xCm,
+    opts.yCm,
+    opts.widthCm,
+    opts.heightCm,
+    undefined,
+    "FAST",
+  );
   pdf.save(opts.filename);
 }
