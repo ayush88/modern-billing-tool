@@ -12,6 +12,8 @@ export interface A4PlacementOptions {
   pixelRatio?: number;
   /** JPEG quality 0..1 — 0.85 keeps it crisp while staying small */
   quality?: number;
+  /** background color used both during capture and behind the placed image */
+  backgroundColor?: string;
 }
 
 /**
