@@ -26,6 +26,7 @@ export async function exportElementToA4Pdf(
 ) {
   const pixelRatio = opts.pixelRatio ?? 2;
   const quality = opts.quality ?? 0.85;
+  const backgroundColor = opts.backgroundColor ?? "#ffffff";
 
   // Wait for fonts and any pending images so the capture matches the live preview.
   if (document.fonts && (document.fonts as any).ready) {
