@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FuelForm, type DateMode } from "@/components/fuel/FuelForm";
 import { FuelPreview } from "@/components/fuel/FuelPreview";
 import { FuelReceipt } from "@/lib/types";
-import { exportElementToPdf } from "@/lib/pdf";
+import { saveFuelBill, downloadFuelPdf } from "@/lib/api";
 
 export const Route = createFileRoute("/fuel")({
   head: () => ({
@@ -20,8 +20,8 @@ export const Route = createFileRoute("/fuel")({
 });
 
 const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 function nowLocal() {
@@ -67,8 +67,8 @@ function FuelPage() {
     telNo: "9015748720",
     receiptNo: randReceipt(),
     product: "Petrol",
-    rate: 96.72,
-    volume: +(5000 / 96.72).toFixed(2),
+    rate: 101.1,
+    volume: +(5000 / 101.1).toFixed(2),
     total: 5000,
     dateTime: nowLocal(),
     paymentMode: "Card",
@@ -86,41 +86,42 @@ function FuelPage() {
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
-    if (dateMode === "single") {
-      if (!previewRef.current) return;
-      await exportElementToPdf(previewRef.current, {
-        filename: `Fuel_Receipt_${data.receiptNo}.pdf`,
-        format: "thermal",
-      });
-      return;
-    }
+    try {
+      if (dateMode === "single") {
+        const saved = await saveFuelBill(data);
+        downloadFuelPdf(saved.id, data.receiptNo);
+        return;
+      }
 
-    // Batch month mode — render each receipt in turn
-    const monthIdx = MONTHS.indexOf(monthValue);
-    const year = parseInt(yearValue, 10) || now.getFullYear();
-    const dates = generateMonthDates(monthIdx, year, receiptCount);
+      // Batch month mode — save each receipt in turn
+      const monthIdx = MONTHS.indexOf(monthValue);
+      const year = parseInt(yearValue, 10) || now.getFullYear();
+      const dates = generateMonthDates(monthIdx, year, receiptCount);
 
-    const original = data;
-    for (let i = 0; i < dates.length; i++) {
-      const newData = {
-        ...original,
-        dateTime: dates[i],
-        receiptNo: randReceipt(),
-      };
-      setData(newData);
-      // wait for render
-      await new Promise((r) => setTimeout(r, 120));
-      if (!previewRef.current) continue;
-      await exportElementToPdf(previewRef.current, {
-        filename: `Fuel_Receipt_${monthValue}_${year}_${i + 1}.pdf`,
-        format: "thermal",
-      });
+      const original = data;
+      for (let i = 0; i < dates.length; i++) {
+        const newData = {
+          ...original,
+          dateTime: dates[i],
+          receiptNo: randReceipt(),
+        };
+        setData(newData);
+        // wait for render to update preview visually
+        await new Promise((r) => setTimeout(r, 120));
+
+        const saved = await saveFuelBill(newData);
+        downloadFuelPdf(saved.id, newData.receiptNo);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save or download fuel bill.");
     }
   };
 
   return (
     <DashboardLayout title="Fuel Receipt">
       <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"></link>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="rounded-2xl shadow-sm">
           <CardHeader>

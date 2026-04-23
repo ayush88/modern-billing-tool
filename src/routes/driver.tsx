@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DriverForm } from "@/components/driver/DriverForm";
 import { DriverPreview } from "@/components/driver/DriverPreview";
 import { DriverSalary } from "@/lib/types";
-import { exportElementToPdf } from "@/lib/pdf";
+import { saveDriverBill, downloadDriverPdf } from "@/lib/api";
 
 export const Route = createFileRoute("/driver")({
   head: () => ({
@@ -27,7 +27,7 @@ function todayISO() {
 
 function DriverPage() {
   const now = new Date();
-  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const [data, setData] = useState<DriverSalary>(() => ({
     employerName: "Ayush Agrawal",
@@ -36,17 +36,19 @@ function DriverPage() {
     salaryMonth: months[now.getMonth()],
     salaryYear: String(now.getFullYear()),
     paymentDate: todayISO(),
-    amount: 18000,
+    amount: 20000,
   }));
 
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
-    if (!previewRef.current) return;
-    await exportElementToPdf(previewRef.current, {
-      filename: `Driver_Salary_${data.salaryMonth}_${data.salaryYear}.pdf`,
-      format: "a4",
-    });
+    try {
+      const saved = await saveDriverBill(data);
+      downloadDriverPdf(saved.id, data.salaryMonth, data.salaryYear);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save or download driver bill.");
+    }
   };
 
   return (

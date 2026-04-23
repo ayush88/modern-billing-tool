@@ -17,18 +17,20 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
         ref={ref}
         className="relative mx-auto bg-white text-black"
         style={{
-          width: "360px",
-          padding: "20px 28px 24px 20px",
-          fontFamily: "'VT323', monospace",
-          fontSize: "20px",
-          lineHeight: 1.15,
-          letterSpacing: "0.5px",
+          width: "6.81cm",
+          padding: "55px 10px 55px 10px",
+          fontFamily: '"Press Start 2P", "VT323", monospace',
+          fontSize: "8.5px",
+          fontWeight: "400",
+          lineHeight: 1.2,
+          letterSpacing: "-.7px",
+          backgroundColor: "#f5f7f7",
         }}
       >
         {/* HDFC vertical strips on the right edge — rotated logo image */}
-        <div
+        < div
           className="pointer-events-none absolute"
-          style={{ right: "2px", top: "20px", width: "22px", height: "260px" }}
+          style={{ right: "-2px", top: "26px", width: "22px", height: "260px" }}
         >
           <img
             src={hdfcStrip}
@@ -36,19 +38,21 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
             crossOrigin="anonymous"
             style={{
               position: "absolute",
-              top: "50%",
+              top: "38%",
               left: "50%",
               height: "22px",
               width: "260px",
-              transform: "translate(-50%, -50%) rotate(90deg)",
+              transform: "translate(-50%, -50%) rotate(270deg)",
               transformOrigin: "center",
               objectFit: "contain",
+              opacity: "0.35",
+              maxWidth: "fit-content",
             }}
           />
-        </div>
+        </div >
         <div
           className="pointer-events-none absolute"
-          style={{ right: "2px", top: "560px", width: "22px", height: "260px" }}
+          style={{ right: "-2px", top: "513px", width: "22px", height: "260px" }}
         >
           <img
             src={hdfcStrip}
@@ -56,19 +60,21 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
             crossOrigin="anonymous"
             style={{
               position: "absolute",
-              top: "50%",
+              top: "-60%",
               left: "50%",
               height: "22px",
               width: "260px",
-              transform: "translate(-50%, -50%) rotate(90deg)",
+              transform: "translate(-50%, -50%) rotate(270deg)",
               transformOrigin: "center",
               objectFit: "contain",
+              opacity: "0.35",
+              maxWidth: "fit-content",
             }}
           />
         </div>
 
         {/* Header */}
-        <div className="text-center" style={{ fontWeight: 700 }}>
+        <div className="text-center">
           <div>WELCOME!!!</div>
           <div>{data.stationName}</div>
           <div>{data.addressLine1}</div>
@@ -78,7 +84,7 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
         <div style={{ height: "16px" }} />
 
         {/* Block 1 */}
-        <div style={{ fontWeight: 700 }}>
+        <div>
           <Line k="GST NO" v={data.gstNo} />
           <Line k="TEL NO" v={data.telNo} />
           <Line k="RECEIPT NO" v={data.receiptNo} />
@@ -87,29 +93,29 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
           <Line k="NOZZLE NO" v="" />
         </div>
 
-        <div style={{ height: "20px" }} />
+        <div style={{ height: "35px" }} />
 
         {/* Block 2 — product/amount */}
-        <div style={{ fontWeight: 700 }}>
+        <div>
           <Line k="PRODUCT" v="" />
           <Line k="RATE/LTR" v={`₹ ${data.rate.toFixed(2)}`} />
           <Line k="AMOUNT" v={`₹ ${data.total.toFixed(2)}`} />
           <Line k="VOLUME(LTR)" v={`${data.volume.toFixed(2)} lt`} />
         </div>
 
-        <div style={{ height: "20px" }} />
+        <div style={{ height: "35px" }} />
 
         {/* Block 3 — vehicle */}
-        <div style={{ fontWeight: 700 }}>
+        <div>
           <Line k="VEH TYPE" v={data.vehicleType || data.product} />
           <Line k="VEH NO" v={data.vehicleNo} />
           <Line k="CUSTOMER NAME" v={data.customerName} />
         </div>
 
-        <div style={{ height: "20px" }} />
+        <div style={{ height: "35px" }} />
 
         {/* Block 4 — meta */}
-        <div style={{ fontWeight: 700 }}>
+        <div>
           <Line k="DATE" v={fmtDate(data.dateTime)} />
           <Line k="MODE" v={data.paymentMode} />
           <Line k="LST NO" v="" />
@@ -117,14 +123,14 @@ export const FuelPreview = forwardRef<HTMLDivElement, { data: FuelReceipt }>(
           <Line k="ATTENDENT ID" v="not available" />
         </div>
 
-        <div style={{ height: "32px" }} />
+        <div style={{ height: "55px" }} />
 
-        <div className="text-center" style={{ fontWeight: 700 }}>
+        <div className="text-center">
           <div>*****************</div>
           <div>Thank You! Visit Again</div>
           <div>Save Fuel, Save Money.</div>
         </div>
-      </div>
+      </div >
     );
   },
 );
