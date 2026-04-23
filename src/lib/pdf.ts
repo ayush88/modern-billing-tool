@@ -58,7 +58,7 @@ export async function exportElementToA4Pdf(
     height: h,
     canvasWidth: w,
     canvasHeight: h,
-    backgroundColor: "#ffffff",
+    backgroundColor,
     cacheBust: true,
     style: {
       margin: "0",
