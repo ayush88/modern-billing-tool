@@ -99,6 +99,7 @@ function FuelPage() {
     await exportElementToA4Pdf(node, {
       filename: `Fuel_Receipt_${receiptNo}.pdf`,
       ...FUEL_PLACEMENT,
+      backgroundColor: "#f5f7f7",
     });
   };
 
