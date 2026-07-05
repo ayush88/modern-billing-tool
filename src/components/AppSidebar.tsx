@@ -1,4 +1,4 @@
-import { Fuel, UserCircle2, FileText, Clock } from "lucide-react";
+import { Fuel, UserCircle2, FileText, Clock, Baby } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Sidebar,

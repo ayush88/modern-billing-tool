@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NannyRouteImport } from './routes/nanny'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FuelRouteImport } from './routes/fuel'
 import { Route as DriverRouteImport } from './routes/driver'
 import { Route as IndexRouteImport } from './routes/index'
 
+const NannyRoute = NannyRouteImport.update({
+  id: '/nanny',
+  path: '/nanny',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/driver': typeof DriverRoute
   '/fuel': typeof FuelRoute
   '/history': typeof HistoryRoute
+  '/nanny': typeof NannyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/driver': typeof DriverRoute
   '/fuel': typeof FuelRoute
   '/history': typeof HistoryRoute
+  '/nanny': typeof NannyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/driver': typeof DriverRoute
   '/fuel': typeof FuelRoute
   '/history': typeof HistoryRoute
+  '/nanny': typeof NannyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/driver' | '/fuel' | '/history'
+  fullPaths: '/' | '/driver' | '/fuel' | '/history' | '/nanny'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/driver' | '/fuel' | '/history'
-  id: '__root__' | '/' | '/driver' | '/fuel' | '/history'
+  to: '/' | '/driver' | '/fuel' | '/history' | '/nanny'
+  id: '__root__' | '/' | '/driver' | '/fuel' | '/history' | '/nanny'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +76,18 @@ export interface RootRouteChildren {
   DriverRoute: typeof DriverRoute
   FuelRoute: typeof FuelRoute
   HistoryRoute: typeof HistoryRoute
+  NannyRoute: typeof NannyRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/nanny': {
+      id: '/nanny'
+      path: '/nanny'
+      fullPath: '/nanny'
+      preLoaderRoute: typeof NannyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history': {
       id: '/history'
       path: '/history'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   DriverRoute: DriverRoute,
   FuelRoute: FuelRoute,
   HistoryRoute: HistoryRoute,
+  NannyRoute: NannyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
