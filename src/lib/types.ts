@@ -26,3 +26,13 @@ export interface DriverSalary {
   amount: number;
   signatureDataUrl?: string; // base64 PNG of uploaded signature
 }
+
+export interface NannySalary {
+  paymentDate: string; // ISO yyyy-mm-dd
+  salaryMonth: string; // "January"
+  amount: number;
+  employeeName: string; // payer
+  employeeCode: string;
+  recipientName: string; // nanny
+  signatureDataUrl?: string;
+}

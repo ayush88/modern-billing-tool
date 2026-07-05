@@ -1,4 +1,4 @@
-import { Fuel, UserCircle2, FileText, Clock } from "lucide-react";
+import { Fuel, UserCircle2, FileText, Clock, Baby } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import {
 const items = [
   { title: "Fuel Receipt", url: "/fuel", icon: Fuel },
   { title: "Driver Salary", url: "/driver", icon: UserCircle2 },
+  { title: "Nanny Salary", url: "/nanny", icon: Baby },
   { title: "History", url: "/history", icon: Clock },
 ];
 
